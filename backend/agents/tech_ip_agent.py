@@ -9,26 +9,21 @@ from backend.utils.logicmill_client import logicmill_patent_search
 from backend.utils.faiss_utils import create_faiss_index, search_faiss
 from backend.utils.data_utils import load_searchventures
 
-# Module-level: load CSVs and build FAISS index once (fast subsequent calls)
+# Load SearchVentures CSV & build FAISS index
 try:
-    SV_DF = load_searchventures()
-    if SV_DF is None:
-        SV_DF = []
+    SV_DF = load_searchventures() or []
 except Exception:
     SV_DF = []
 
 FAISS_INDEX = None
 try:
-    if hasattr(SV_DF, "empty"):
-        if not SV_DF.empty:
-            FAISS_INDEX, _ = create_faiss_index(SV_DF, text_column='candidate_text')
+    if hasattr(SV_DF, "empty") and not SV_DF.empty:
+        FAISS_INDEX, _ = create_faiss_index(SV_DF, text_column="candidate_text")
 except Exception:
-    logging.exception("Failed to create FAISS index at import time")
+    logging.exception("Failed to create FAISS index at import")
     FAISS_INDEX = None
 
-
 def _safe_json_parse(s: str) -> Any:
-    """Try direct JSON parse, then curly-brace extraction, else None."""
     if not s:
         return None
     try:
@@ -42,12 +37,7 @@ def _safe_json_parse(s: str) -> Any:
                 return None
     return None
 
-
 def claude_summarize_novelty(text: str) -> Dict[str, Any]:
-    """
-    Call Claude to produce novelty bullets and TRL. Always returns a dict with keys:
-    novelty_bullets (list), trl (int 1-9), rationale (str)
-    """
     default = {"novelty_bullets": [], "trl": 1, "rationale": ""}
     if not text:
         return default
@@ -59,45 +49,35 @@ def claude_summarize_novelty(text: str) -> Dict[str, Any]:
         f"Human: {text[:15000]}\n\nAssistant:"
     )
 
-    output_text = ""
     try:
-        output_text = claude_ask(prompt, model="claude-opus-4-1-20250805", max_tokens=800)
+        output_text = claude_ask(prompt, max_tokens=800)
         parsed = _safe_json_parse(output_text)
         if isinstance(parsed, dict):
-            # validate keys
             parsed["novelty_bullets"] = parsed.get("novelty_bullets", []) or []
             parsed["trl"] = int(parsed.get("trl", 1) or 1)
             parsed["rationale"] = parsed.get("rationale", "") or ""
             return parsed
-        # fallback: return best-effort text
         return {"novelty_bullets": [], "trl": 1, "rationale": (output_text or "")[:1000]}
     except Exception as e:
         logging.exception("Claude summarization failed")
         return {"novelty_bullets": [], "trl": 1, "rationale": f"Claude request failed: {str(e)}"}
 
-
-def logicmill_search_wrapper(text: str) -> Dict[str, Any]:
+def logicmill_search_wrapper(text: str):
     """
-    Wrapper around the logicmill client returning the raw JSON or error dict.
+    Wrapper around the LogicMill client returning the raw JSON or error dict.
     """
     try:
         return logicmill_patent_search(text)
     except Exception as e:
-        logging.exception("LogicMill wrapper exception")
         return {"error": f"LogicMill call failed: {str(e)}"}
 
 
 def faiss_similarities(text: str, top_k: int = 5) -> List[Dict[str, Any]]:
-    """
-    Run FAISS search against the SearchVentures (SV_DF) dataset if available.
-    Returns list of result dicts (possibly empty).
-    """
     if FAISS_INDEX is None or SV_DF is None or getattr(SV_DF, "empty", True):
         return []
 
     try:
         results = search_faiss(FAISS_INDEX, SV_DF, text, top_k=top_k)
-        # Normalize results
         out = []
         for r in results:
             out.append({
@@ -111,44 +91,26 @@ def faiss_similarities(text: str, top_k: int = 5) -> List[Dict[str, Any]]:
         logging.exception("FAISS search failed")
         return []
 
-
-def analyze_tech_ip(text: str) -> Dict[str, Any]:
-    """
-    High-level Tech/IP analysis pipeline:
-      - Claude novelty/TRL
-      - LogicMill patent similarity (GraphQL)
-      - FAISS similarity from CSV snapshot
-    Returns structured JSON with partial results even on failures.
-    """
-    # Keep function robust: always return a dict
-    result: Dict[str, Any] = {
+def analyze_tech_ip(text: str):
+    result = {
         "summary": {"novelty_bullets": [], "trl": 1, "rationale": ""},
         "patent_matches": {},
         "faiss_matches": []
     }
 
-    # 1) Claude summary
+    # Claude
     try:
-        summary = claude_summarize_novelty(text)
-        result["summary"] = summary
-    except Exception:
-        logging.exception("Error running Claude summary")
-        result["summary"] = {"novelty_bullets": [], "trl": 1, "rationale": ""}
+        result["summary"] = claude_ask(
+            f"Summarize novelty and TRL (1-9) for this research: {text[:15000]}"
+        )
+    except Exception as e:
+        result["summary"]["rationale"] = f"Claude request failed: {str(e)}"
 
-    # 2) LogicMill: GraphQL-based similarity
+    # LogicMill
     try:
-        lm = logicmill_search_wrapper(text)
-        result["patent_matches"] = lm
-    except Exception:
-        logging.exception("Error calling LogicMill")
-        result["patent_matches"] = {"error": "LogicMill call failed unexpectedly."}
-
-    # 3) FAISS fallback/supplement
-    try:
-        faiss_matches = faiss_similarities(text, top_k=5)
-        result["faiss_matches"] = faiss_matches
-    except Exception:
-        logging.exception("Error running FAISS")
-        result["faiss_matches"] = []
+        result["patent_matches"] = logicmill_patent_search(text)
+    except Exception as e:
+        result["patent_matches"] = {"error": f"LogicMill call failed: {str(e)}"}
 
     return result
+

@@ -1,24 +1,19 @@
-import logging
 from anthropic import Anthropic
-from backend.config import ANTHROPIC_API_KEY
+from backend.config import ANTHROPIC_API_KEY, MAX_CLAUDE_TOKENS
 
 claude = Anthropic(api_key=ANTHROPIC_API_KEY)
 
-def claude_ask(prompt: str, model: str = "claude-opus-4-1-20250805", max_tokens: int = 800) -> str:
+def claude_ask(prompt: str, max_tokens: int = MAX_CLAUDE_TOKENS, model: str = "claude-3"):
     """
-    Send prompt to Claude using completions API.
-    Automatically prepends Human: if missing.
+    Universal wrapper for Claude Messages API. Returns completion text.
     """
-    if not prompt.startswith("Human:"):
-        prompt = f"\n\nHuman: {prompt}\n\nAssistant:"
-
-    try:
-        resp = claude.completions.create(
-            model=model,
-            prompt=prompt,
-            max_tokens_to_sample=max_tokens
-        )
-        return resp.completion
-    except Exception as e:
-        logging.error("Claude API error: %s", e)
-        raise
+    messages = [
+        {"role": "system", "content": "You are a VC analyst. Respond only with concise JSON."},
+        {"role": "user", "content": prompt}
+    ]
+    resp = claude.chat(
+        model=model,
+        messages=messages,
+        max_tokens_to_sample=max_tokens
+    )
+    return resp['completion']

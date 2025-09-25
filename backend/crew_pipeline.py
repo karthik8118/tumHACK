@@ -7,10 +7,10 @@ from backend.agents.scaling_agent import evaluate_scaling
 from backend.agents.funding_agent import evaluate_funding
 from backend.agents.impact_agent import evaluate_impact
 
-
 def run_pipeline(paper_text, authors_text, agents_to_run=None):
     """
     Run selected agents or all if agents_to_run is None.
+    Returns a dict of results with a final 'unicorn_potential_score'.
     """
     if agents_to_run is None:
         agents_to_run = ['tech_ip', 'market', 'team', 'scaling', 'funding', 'impact']
@@ -71,7 +71,7 @@ def run_pipeline(paper_text, authors_text, agents_to_run=None):
             logging.error("Impact agent failed: %s", e)
             results['impact'] = {"error": str(e)}
 
-    # Aggregate Unicorn Potential Score
+    # Aggregate Unicorn Potential Score (simplified)
     score_keys = ['tech_ip', 'market', 'team', 'scaling', 'funding', 'impact']
     scores = []
     for k in score_keys:

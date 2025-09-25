@@ -1,3 +1,4 @@
+# backend/agents/funding_agent.py
 import json
 from backend.utils.claude_client import claude_ask
 
@@ -7,6 +8,7 @@ def evaluate_funding(text):
         "Return JSON: {funding_score_0_5, recommended_calls, rationale}\n\n"
         f"{text[:12000]}"
     )
+
     output_text = ""
     try:
         output_text = claude_ask(prompt)
