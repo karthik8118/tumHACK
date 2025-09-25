@@ -38,15 +38,32 @@ def _safe_json_parse(s: str) -> Any:
     return None
 
 def claude_summarize_novelty(text: str) -> Dict[str, Any]:
-    default = {"novelty_bullets": [], "trl": 1, "rationale": ""}
+    default = {"novelty_bullets": [], "trl": 1, "rationale": "", "novelty_score": 0, "ip_potential": 0}
     if not text:
         return default
 
     prompt = (
-        "You are a VC analyst. Given research text, produce a short novelty summary (3-4 bullets) "
-        "and estimate TRL (1-9). RETURN JSON exactly in this shape: "
-        '{"novelty_bullets": ["..."], "trl": 5, "rationale": "..." }.\n\n'
-        f"Human: {text[:15000]}\n\nAssistant:"
+        "You are a SPRIND (German Federal Agency for Disruptive Innovation) analyst evaluating research for unicorn potential. "
+        "Analyze this research paper for TECHNOLOGY & IP criteria (25 points total):\n\n"
+        
+        "A. NOVELTY/SCIENTIFIC ADVANCEMENT (15 points):\n"
+        "- Does the research contain novel scientific/technical claims that materially outperform existing methods?\n"
+        "- Look for: novel methods, benchmarks, citation gaps, advancement potential\n"
+        "- Score 0-5 based on scientific advancement level\n\n"
+        
+        "B. TRL/ENGINEERING FEASIBILITY (5 points):\n"
+        "- Estimate Technology Readiness Level (1-9)\n"
+        "- Higher scores for: prototypes, reproducible code, replication shown\n"
+        "- Evidence: methods, experiments, datasets, implementation details\n\n"
+        
+        "C. IP & PATENTABILITY (5 points):\n"
+        "- Is it patentable/blocked by prior art?\n"
+        "- Are there existing patents in this domain?\n"
+        "- Consider EPO (European Patent Office) context\n\n"
+        
+        "RETURN JSON exactly: "
+        '{"novelty_bullets": ["bullet1", "bullet2"], "trl": 5, "novelty_score": 4, "ip_potential": 3, "rationale": "detailed analysis"}\n\n'
+        f"Research text: {text[:15000]}\n\nAssistant:"
     )
 
     try:
@@ -57,10 +74,52 @@ def claude_summarize_novelty(text: str) -> Dict[str, Any]:
             parsed["trl"] = int(parsed.get("trl", 1) or 1)
             parsed["rationale"] = parsed.get("rationale", "") or ""
             return parsed
-        return {"novelty_bullets": [], "trl": 1, "rationale": (output_text or "")[:1000]}
+        # If Claude response is not valid JSON, use fallback analysis
+        return _intelligent_fallback_analysis(text)
     except Exception as e:
         logging.exception("Claude summarization failed")
-        return {"novelty_bullets": [], "trl": 1, "rationale": f"Claude request failed: {str(e)}"}
+        # Use fallback analysis instead of hardcoded values
+        return _intelligent_fallback_analysis(text)
+
+def _intelligent_fallback_analysis(text: str) -> Dict[str, Any]:
+    """Fallback analysis using FAISS and LogicMill data"""
+    try:
+        # Get FAISS similarities
+        similar_companies = faiss_similarities(text, top_k=3)
+        
+        # Get LogicMill patent data
+        patent_data = logicmill_search_wrapper(text)
+        
+        # Analyze text for keywords
+        text_lower = text.lower()
+        
+        # Determine novelty based on keywords
+        novelty_keywords = ['novel', 'first', 'innovative', 'new', 'advanced', 'improved', 'enhanced']
+        novelty_score = min(5, sum(1 for keyword in novelty_keywords if keyword in text_lower))
+        
+        # Determine TRL based on implementation details
+        trl_keywords = ['prototype', 'implementation', 'deployment', 'production', 'clinical trial', 'pilot study']
+        trl = min(9, 3 + sum(1 for keyword in trl_keywords if keyword in text_lower))
+        
+        # Determine IP potential
+        ip_keywords = ['patent', 'intellectual property', 'proprietary', 'algorithm', 'method', 'system']
+        ip_potential = min(5, sum(1 for keyword in ip_keywords if keyword in text_lower))
+        
+        # Create rationale
+        rationale = f"Fallback analysis based on text content. Found {len(similar_companies)} similar companies. "
+        if patent_data and 'data' in patent_data:
+            rationale += "Patent similarity analysis available. "
+        rationale += f"Novelty indicators: {novelty_score}/5, TRL estimate: {trl}/9, IP potential: {ip_potential}/5."
+        
+        return {
+            "novelty_bullets": [f"Text analysis suggests {novelty_score}/5 novelty level"],
+            "trl": trl,
+            "novelty_score": novelty_score,
+            "ip_potential": ip_potential,
+            "rationale": rationale
+        }
+    except Exception as e:
+        return {"novelty_bullets": [], "trl": 3, "rationale": f"Fallback analysis failed: {str(e)}", "novelty_score": 2, "ip_potential": 2}
 
 def logicmill_search_wrapper(text: str):
     """
