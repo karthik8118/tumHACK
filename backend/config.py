@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Explicitly load your .env
+load_dotenv(dotenv_path="/Users/karthikgudibanda/Desktop/tumHACK/.env")
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 LOGICMILL_API_KEY = os.getenv("LOGICMILL_API_KEY")

@@ -1,28 +1,42 @@
-from fastapi import FastAPI, File, UploadFile
-from backend.utils.pdf_parser import extract_text_from_fileobj
+# backend/main.py
+from fastapi import FastAPI, Request, UploadFile, File
+from fastapi.responses import JSONResponse
+from io import BytesIO
 from backend.crew_pipeline import run_pipeline
-import logging
+from backend.utils.pdf_utils import extract_text_from_pdf
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+app = FastAPI()
 
-app = FastAPI(title="Max Planck → Unicorn Analyst")
 
 @app.post("/analyze-paper")
-async def analyze_paper(file: UploadFile = File(...), authors: str = ""):
-    logging.info("Received paper for analysis")
-    
-    # Step 1: Extract text from PDF
-    text = extract_text_from_fileobj(file.file)
-    logging.info(f"Extracted {len(text)} characters from PDF")
+async def analyze_paper(file: UploadFile = File(None), request: Request = None):
+    """
+    Handles PDF uploads or raw text JSON input.
+    If a PDF is uploaded, extracts text safely with pdf_utils.
+    If JSON is sent, uses 'text' field directly.
+    """
+    try:
+        if file:
+            # PDF upload: extract text safely
+            paper_bytes = await file.read()
+            paper_text = extract_text_from_pdf(BytesIO(paper_bytes))
+            authors = []  # Could extend to read authors from JSON if sent separately
+            agents_to_run = None
+        elif request:
+            # JSON input: use provided text
+            data = await request.json()
+            paper_text = data.get("text", "")
+            authors = data.get("authors", [])
+            agents_to_run = data.get("agents_to_run", None)
+        else:
+            return JSONResponse(status_code=400, content={"error": "No input provided"})
 
-    # Step 2: Run full pipeline (calls all agents internally)
-    results = run_pipeline(text, authors)
+        # Run pipeline safely
+        results = run_pipeline(paper_text, authors, agents_to_run)
+        return JSONResponse(content=results)
 
-    # Step 3: Return JSON output
-    logging.info(f"Returning final Unicorn Potential Score: {results.get('unicorn_potential_score')}")
-    return results
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to Max Planck Unicorn Analyst API"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Pipeline failed: {str(e)}"}
+        )

@@ -10,7 +10,7 @@ def load_searchventures():
     except Exception as e:
         logging.error("searchventures load error: %s", e)
         return pd.DataFrame()
-        return pd.DataFrame()
+
 def load_openvc():
     try:
         df = pd.read_csv(OPENVC_CSV)
@@ -18,8 +18,4 @@ def load_openvc():
         return df
     except Exception as e:
         logging.error("openvc load error: %s", e)
-        return pd.DataFrame()
-        return df
-        logging.error("openvc load error: %s", e)
-        return pd.DataFrame()
         return pd.DataFrame()

@@ -1,51 +1,93 @@
+# backend/crew_pipeline.py
+import logging
 from backend.agents.tech_ip_agent import analyze_tech_ip
 from backend.agents.market_agent import find_competitors_semantic
 from backend.agents.team_agent import evaluate_team
 from backend.agents.scaling_agent import evaluate_scaling
 from backend.agents.funding_agent import evaluate_funding
 from backend.agents.impact_agent import evaluate_impact
-import logging
 
-def run_pipeline(paper_text, authors_text):
-    logging.info("Starting pipeline")
+
+def run_pipeline(paper_text, authors_text, agents_to_run=None):
+    """
+    Run selected agents or all if agents_to_run is None.
+    """
+    if agents_to_run is None:
+        agents_to_run = ['tech_ip', 'market', 'team', 'scaling', 'funding', 'impact']
 
     results = {}
 
-    logging.info("Running Tech/IP Agent")
-    results['tech_ip'] = analyze_tech_ip(paper_text)
-    logging.info(f"Tech/IP result: {results['tech_ip']}")
+    # Tech/IP Agent
+    if 'tech_ip' in agents_to_run:
+        logging.info("Running Tech/IP Agent")
+        try:
+            results['tech_ip'] = analyze_tech_ip(paper_text)
+        except Exception as e:
+            logging.error("Tech/IP agent failed: %s", e)
+            results['tech_ip'] = {"error": str(e)}
 
-    logging.info("Running Market Agent")
-    results['market'] = find_competitors_semantic(paper_text)
-    logging.info(f"Market result: {results['market']}")
+    # Market Agent
+    if 'market' in agents_to_run:
+        logging.info("Running Market Agent")
+        try:
+            results['market'] = find_competitors_semantic(paper_text)
+        except Exception as e:
+            logging.error("Market agent failed: %s", e)
+            results['market'] = {"error": str(e)}
 
-    logging.info("Running Team Agent")
-    results['team'] = evaluate_team(authors_text)
-    logging.info(f"Team result: {results['team']}")
+    # Team Agent
+    if 'team' in agents_to_run:
+        logging.info("Running Team Agent")
+        try:
+            results['team'] = evaluate_team(authors_text)
+        except Exception as e:
+            logging.error("Team agent failed: %s", e)
+            results['team'] = {"error": str(e)}
 
-    logging.info("Running Scaling Agent")
-    results['scaling'] = evaluate_scaling(paper_text)
-    logging.info(f"Scaling result: {results['scaling']}")
+    # Scaling Agent
+    if 'scaling' in agents_to_run:
+        logging.info("Running Scaling Agent")
+        try:
+            results['scaling'] = evaluate_scaling(paper_text)
+        except Exception as e:
+            logging.error("Scaling agent failed: %s", e)
+            results['scaling'] = {"error": str(e)}
 
-    logging.info("Running Funding Agent")
-    results['funding'] = evaluate_funding(paper_text)
-    logging.info(f"Funding result: {results['funding']}")
+    # Funding Agent
+    if 'funding' in agents_to_run:
+        logging.info("Running Funding Agent")
+        try:
+            results['funding'] = evaluate_funding(paper_text)
+        except Exception as e:
+            logging.error("Funding agent failed: %s", e)
+            results['funding'] = {"error": str(e)}
 
-    logging.info("Running Impact Agent")
-    results['impact'] = evaluate_impact(paper_text)
-    logging.info(f"Impact result: {results['impact']}")
+    # Impact Agent
+    if 'impact' in agents_to_run:
+        logging.info("Running Impact Agent")
+        try:
+            results['impact'] = evaluate_impact(paper_text)
+        except Exception as e:
+            logging.error("Impact agent failed: %s", e)
+            results['impact'] = {"error": str(e)}
 
     # Aggregate Unicorn Potential Score
-    scores = [
-        results['tech_ip']['summary'].get('trl', 1),
-        len(results['market'].get('matches', [])),
-        results['team'].get('team_score_0_5', 2),
-        results['scaling'].get('scaling_score_0_5', 2),
-        results['funding'].get('funding_score_0_5', 2),
-        results['impact'].get('impact_score_0_5', 2)
-    ]
-    final_score = sum([s if isinstance(s, (int,float)) else 2 for s in scores]) / len(scores) * 20
-    results['unicorn_potential_score'] = round(final_score, 1)
-    
-    logging.info(f"Final Unicorn Potential Score: {results['unicorn_potential_score']}")
+    score_keys = ['tech_ip', 'market', 'team', 'scaling', 'funding', 'impact']
+    scores = []
+    for k in score_keys:
+        if k not in results:
+            continue
+        val = None
+        if k == 'tech_ip':
+            val = results[k].get('summary', {}).get('trl', 1)
+        elif k == 'market':
+            val = len(results[k].get('matches', [])) if results[k].get('matches') else 0
+        else:
+            val = results[k].get(f"{k}_score_0_5", 2)
+        scores.append(val if isinstance(val, (int, float)) else 2)
+
+    if scores:
+        final_score = sum(scores) / len(scores) * 20
+        results['unicorn_potential_score'] = round(final_score, 1)
+
     return results
