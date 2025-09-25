@@ -1,15 +1,17 @@
-# backend/utils/claude_client.py
 import logging
 from anthropic import Anthropic
 from backend.config import ANTHROPIC_API_KEY
 
 claude = Anthropic(api_key=ANTHROPIC_API_KEY)
 
-
 def claude_ask(prompt: str, model: str = "claude-opus-4-1-20250805", max_tokens: int = 800) -> str:
     """
-    Send a prompt to Claude using the completions API.
+    Send prompt to Claude using completions API.
+    Automatically prepends Human: if missing.
     """
+    if not prompt.startswith("Human:"):
+        prompt = f"\n\nHuman: {prompt}\n\nAssistant:"
+
     try:
         resp = claude.completions.create(
             model=model,
