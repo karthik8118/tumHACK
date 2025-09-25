@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPG Breakthrough Analyst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="js/app.js"></script>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <!-- Loading Screen with Zoom Animation -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">MPG</div>
+            <div class="loading-text">Breakthrough Analyst</div>
+            <div class="loading-subtitle">Accelerating Science to Market</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <button class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="logo">MPG Analyst</div>
+        <nav class="main-nav">
+            <button class="nav-btn home-btn" data-target="#home">🏠 Home</button>
+            <button class="nav-btn" data-target="#dashboard">📊 Dashboard</button>
+            <button class="nav-btn" data-target="#evaluate">🔍 Evaluate</button>
+            <button class="nav-btn" data-target="#avatar">🤖 AI Avatar</button>
+            <button class="nav-btn" data-target="#analysis">🧠 Deep Analysis</button>
+            <button class="nav-btn" data-target="#patents">📋 Patent Search</button>
+            <button class="nav-btn" data-target="#insights">💡 Insights</button>
+        </nav>
+        <div class="auth-buttons">
+            <button class="auth-btn" id="loginBtn">Login</button>
+            <button class="auth-btn primary" id="registerBtn">Register</button>
+        </div>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <h3>Features</h3>
+            <ul class="feature-list">
+                <li><button class="feature-btn" data-target="#evaluate">🔍 Startup Evaluation</button></li>
+                <li><button class="feature-btn" data-target="#avatar">🤖 AI Avatar Chat</button></li>
+                <li><button class="feature-btn" data-target="#analysis">🧠 LLM Deep Analysis</button></li>
+                <li><button class="feature-btn" data-target="#patents">📋 Patent Similarity</button></li>
+                <li><button class="feature-btn" data-target="#insights">💡 Market Insights</button></li>
+                <li><button class="feature-btn" data-target="#dashboard">📊 Portfolio Dashboard</button></li>
+                <li><button class="feature-btn" data-target="#research">🔬 Research Gap Analysis</button></li>
+                <li><button class="feature-btn" data-target="#competitors">⚔️ Competitor Mapping</button></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+        <section id="home" class="view active">
+            <div class="hero">
+                <h1>
+                    Accelerate Science to Market
+                    <span class="gradient">Breakthrough Potential Analyzer</span>
+                </h1>
+                <p>
+                    Prototype to assess startup potential from Max Planck research using multi-agent analysis and similarity insights.
+                </p>
+                <div class="cta-row">
+                    <button class="primary nav-btn" data-target="#evaluate">Start Evaluation</button>
+                    <button class="secondary nav-btn" data-target="#dashboard">View Dashboard</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="view">
+            <h2>Portfolio Dashboard</h2>
+            <div class="cards">
+                <div class="card">
+                    <div class="card-title">Average Potential</div>
+                    <div class="card-value" id="avgPotential">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Strongest Factor</div>
+                    <div class="card-value" id="strongestFactor">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Weakest Factor</div>
+                    <div class="card-value" id="weakestFactor">—</div>
+                </div>
+            </div>
+            <div class="charts">
+                <canvas id="radarChart"></canvas>
+                <canvas id="barChart"></canvas>
+            </div>
+        </section>
+
+        <section id="evaluate" class="view">
+            <h2>Startup Evaluation</h2>
+            <form id="evalForm">
+                <div class="grid">
+                    <label>
+                        Startup Name
+                        <input name="name" placeholder="e.g., QuantumSense AI" required />
+                    </label>
+                    <label>
+                        Problem Statement
+                        <textarea name="problem" placeholder="What problem do you solve?" required></textarea>
+                    </label>
+                    <label>
+                        Solution Overview
+                        <textarea name="solution" placeholder="How is your solution novel?" required></textarea>
+                    </label>
+                    <label>
+                        Target Customers
+                        <input name="customers" placeholder="e.g., Pharma, Automotive, Everyday Consumers" />
+                    </label>
+                    <label>
+                        Team Overview
+                        <textarea name="team" placeholder="Tech, research, marketing strengths"></textarea>
+                    </label>
+                    <label class="file">
+                        Upload Pitch/Publication (PDF)
+                        <input type="file" id="pdfInput" accept="application/pdf" />
+                    </label>
+                </div>
+
+                <!-- Evaluation Criteria Sliders -->
+                <div class="evaluation-criteria">
+                    <h3>Evaluation Criteria (Rate 1-10)</h3>
+                    <div class="criteria-grid">
+                        <div class="criterion">
+                            <label for="researchGap">Research Gap Analysis</label>
+                            <input type="range" id="researchGap" name="researchGap" min="1" max="10" value="5" />
+                            <span id="rgVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="futurePotential">Future Potential</label>
+                            <input type="range" id="futurePotential" name="futurePotential" min="1" max="10" value="5" />
+                            <span id="fpVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="competitors">Competitors Intensity</label>
+                            <input type="range" id="competitors" name="competitors" min="1" max="10" value="5" />
+                            <span id="ciVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="teamStrength">Team Strength</label>
+                            <input type="range" id="teamStrength" name="teamStrength" min="1" max="10" value="5" />
+                            <span id="tsVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="techNovelty">Tech Novelty</label>
+                            <input type="range" id="techNovelty" name="techNovelty" min="1" max="10" value="5" />
+                            <span id="tnVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="marketDemand">Market Demand</label>
+                            <input type="range" id="marketDemand" name="marketDemand" min="1" max="10" value="5" />
+                            <span id="mdVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="marketPotential">Market Potential</label>
+                            <input type="range" id="marketPotential" name="marketPotential" min="1" max="10" value="5" />
+                            <span id="mpVal">5</span>
+                        </div>
+                        <div class="criterion">
+                            <label for="revenue">Revenue Generation</label>
+                            <input type="range" id="revenue" name="revenue" min="1" max="10" value="5" />
+                            <span id="rg2Val">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="additional-features">
+                    <h3>Additional Evaluation Features</h3>
+                    <div class="feature-inputs" id="featureInputs">
+                        <div class="feature-input">
+                            <input type="text" placeholder="Feature name (e.g., Scalability)" class="feature-name" />
+                            <textarea placeholder="Description of this feature" class="feature-desc"></textarea>
+                            <button type="button" class="remove-feature">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addFeature" class="secondary">+ Add Feature</button>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="primary" id="runAnalysisBtn">Run Analysis</button>
+                </div>
+            </form>
+            <div class="results" id="results"></div>
+        </section>
+
+        <section id="avatar" class="view">
+            <h2>AI Avatar - Real-time Conversation</h2>
+            <div class="avatar-container">
+                <!-- Beyond Presence Avatar -->
+                <div class="beyond-presence-avatar">
+                    <div id="agent-container" class="agent-iframe-container">
+                        <iframe 
+                            id="beyond-presence-iframe"
+                            src="https://bey.chat/1474429c-7295-4a6d-9213-ff2ad571e7a1" 
+                            width="100%" 
+                            height="400px" 
+                            frameborder="0" 
+                            allowfullscreen
+                            allow="camera; microphone; fullscreen"
+                            style="border: none; border-radius: 16px; background: rgba(17,24,39,0.8);"
+                        ></iframe>
+                    </div>
+                </div>
+                
+                <!-- Chat Interface -->
+                <div class="chat-interface">
+                    <div class="chat-header">
+                        <h3>💬 Real-time AI Conversation</h3>
+                        <div class="connection-status" id="connectionStatus">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Connecting...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="chatLog" class="chat-log">
+                        <div class="welcome-message">
+                            <div class="message bot">
+                                <div class="message-content">
+                                    👋 Hello! I'm your AI startup analyst. I can help you evaluate breakthrough potential, 
+                                    analyze market opportunities, and provide strategic guidance. 
+                                    <br><br>
+                                    Try asking me about your startup idea, or use the voice features for hands-free conversation!
+                                </div>
+                                <div class="message-time">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-controls">
+                        <div class="input-group">
+                            <input id="chatInput" placeholder="Describe your startup idea..." />
+                            <button id="sendBtn" class="primary">Send</button>
+                        </div>
+                        <div class="voice-controls">
+                            <button id="micBtn" class="voice-btn" title="Voice Input">
+                                <span class="mic-icon">🎤</span>
+                                <span class="btn-text">Voice</span>
+                            </button>
+                            <button id="speakBtn" class="voice-btn" title="Text to Speech">
+                                <span class="speak-icon">🔊</span>
+                                <span class="btn-text">Speak</span>
+                            </button>
+                            <button id="audioToggleBtn" class="voice-btn" title="Toggle Audio Source">
+                                <span class="audio-icon">🎭</span>
+                                <span class="btn-text">Avatar</span>
+                            </button>
+                            <button id="clearBtn" class="voice-btn" title="Clear Chat">
+                                <span class="clear-icon">🗑️</span>
+                                <span class="btn-text">Clear</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-features">
+                        <h4>🤖 AI Features</h4>
+                        <div class="feature-tags">
+                            <span class="feature-tag">Claude 3.5 Sonnet</span>
+                            <span class="feature-tag">ElevenLabs TTS</span>
+                            <span class="feature-tag">Speech Recognition</span>
+                            <span class="feature-tag">Real-time Analysis</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="analysis" class="view">
+            <h2>🧠 LLM Deep Analysis</h2>
+            <div class="analysis-container">
+                <div class="analysis-input">
+                    <h3>Comprehensive Startup Analysis</h3>
+                    <textarea id="deepAnalysisInput" placeholder="Enter detailed startup description, business model, technology details, market analysis, team information, and any other relevant data for comprehensive analysis..."></textarea>
+                    <button id="runDeepAnalysis" class="primary">Run Deep Analysis</button>
+                </div>
+                <div class="analysis-results" id="deepAnalysisResults">
+                    <div class="loading-message" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Conducting comprehensive analysis...</p>
+                    </div>
+                    <div class="results-content" id="deepAnalysisContent">
+                        <!-- Analysis results will appear here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="patents" class="view">
+            <h2>📋 Patent Similarity Analysis</h2>
+            <div class="patent-search">
+                <div class="search-box">
+                    <input type="text" placeholder="Enter technology keywords..." id="patentSearch">
+                    <select id="searchType">
+                        <option value="patent">Patents</option>
+                        <option value="publication">Publications</option>
+                        <option value="both">Both</option>
+                    </select>
+                    <input type="number" id="searchLimit" value="10" min="1" max="50" placeholder="Limit">
+                    <button class="primary" id="searchPatents">Search</button>
+                </div>
+                <div class="patent-results" id="patentResults">
+                    <div class="loading-message" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Searching Logic Mill database...</p>
+                    </div>
+                    <div class="results-container" id="resultsContainer">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="insights" class="view">
+            <h2>💡 Market Insights & Trends</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <h3>Market Size Projection</h3>
+                    <canvas id="marketSizeChart"></canvas>
+                    <div class="projection-text">$2.3B by 2027</div>
+                </div>
+                <div class="insight-card">
+                    <h3>Technology Adoption Curve</h3>
+                    <canvas id="adoptionChart"></canvas>
+                    <div class="adoption-stage">Early Adopter Phase</div>
+                </div>
+                <div class="insight-card">
+                    <h3>Investment Trends</h3>
+                    <div class="trend-indicators">
+                        <div class="trend up">📈 VC Funding +45% YoY</div>
+                        <div class="trend up">📈 Patent Filings +23% YoY</div>
+                        <div class="trend down">📉 Time to Market -12%</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="research" class="view">
+            <h2>🔬 Research Gap Analysis</h2>
+            <div class="research-matrix">
+                <canvas id="researchMatrix"></canvas>
+                <div class="gap-analysis">
+                    <h3>Identified Gaps</h3>
+                    <ul>
+                        <li>Real-time processing optimization</li>
+                        <li>Scalability beyond 1000 nodes</li>
+                        <li>Energy efficiency improvements</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="competitors" class="view">
+            <h2>⚔️ Competitor Mapping</h2>
+            <div class="competitor-grid">
+                <div class="competitor-card">
+                    <h4>TechCorp AI</h4>
+                    <div class="competitor-score">Threat Level: High</div>
+                    <div class="strengths">Strengths: Funding, Team</div>
+                    <div class="weaknesses">Weaknesses: Speed to market</div>
+                </div>
+                <div class="competitor-card">
+                    <h4>InnovateLab</h4>
+                    <div class="competitor-score">Threat Level: Medium</div>
+                    <div class="strengths">Strengths: Technology</div>
+                    <div class="weaknesses">Weaknesses: Market access</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit" class="primary">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Register</h2>
+            <form id="registerForm">
+                <input type="text" placeholder="Full Name" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+                <input type="password" placeholder="Confirm Password" required>
+                <button type="submit" class="primary">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <span>Prototype • Logic Mill, OpenAlex, Espacenet ready</span>
+    </footer>
+</body>
+</html>
+
+

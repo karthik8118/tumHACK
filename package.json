@@ -1,0 +1,36 @@
+{
+  "name": "mpg-breakthrough-analyst",
+  "version": "1.0.0",
+  "description": "Max Planck Breakthrough Startup Potential Analyzer",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "build": "echo 'Static frontend - no build needed'",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "@anthropic-ai/sdk": "^0.9.1",
+    "elevenlabs": "^0.1.0",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "startup",
+    "analysis",
+    "max-planck",
+    "ai",
+    "breakthrough"
+  ],
+  "author": "MPG Hackathon Team",
+  "license": "MIT"
+}
