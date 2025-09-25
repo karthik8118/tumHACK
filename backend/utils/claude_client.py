@@ -1,19 +1,26 @@
 from anthropic import Anthropic
 from backend.config import ANTHROPIC_API_KEY, MAX_CLAUDE_TOKENS
 
-claude = Anthropic(api_key=ANTHROPIC_API_KEY)
+claude_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
 def claude_ask(prompt: str, max_tokens: int = MAX_CLAUDE_TOKENS, model: str = "claude-3"):
     """
-    Universal wrapper for Claude Messages API. Returns completion text.
+    Wrapper for Claude completion.
+    Returns completion text as string.
     """
+    from anthropic import HumanMessage, SystemMessage, ChatCompletion
+
     messages = [
-        {"role": "system", "content": "You are a VC analyst. Respond only with concise JSON."},
-        {"role": "user", "content": prompt}
+        SystemMessage(content="You are a VC analyst. Respond only with concise JSON."),
+        HumanMessage(content=prompt)
     ]
-    resp = claude.chat(
-        model=model,
-        messages=messages,
-        max_tokens_to_sample=max_tokens
-    )
-    return resp['completion']
+    try:
+        resp = claude_client.chat.completions.create(
+            model=model,
+            messages=messages,
+            max_tokens_to_sample=max_tokens
+        )
+        # Return content of first assistant message
+        return resp.choices[0].message.content
+    except Exception as e:
+        return f"CLAUDE request failed: {str(e)}"

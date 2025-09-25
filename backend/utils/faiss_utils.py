@@ -1,7 +1,6 @@
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
-import pandas as pd
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
