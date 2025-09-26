@@ -43,3 +43,10 @@ def claude_ask(prompt: str, max_tokens: int = MAX_CLAUDE_TOKENS, model: str = "c
         return response.content[0].text
     except Exception as e:
         return f"CLAUDE request failed: {str(e)}"
+
+def claude_summarize_novelty(prompt: str, max_tokens: int = MAX_CLAUDE_TOKENS, model: str = "claude-3-haiku-20240307"):
+    """
+    Summarize and analyze novelty using Claude.
+    This is an alias for claude_ask for backward compatibility.
+    """
+    return claude_ask(prompt, max_tokens, model)

@@ -1,244 +1,368 @@
-# Research Paper Unicorn Potential Analyzer
+# MPG Unicorn Analyst
 
-**Hackathon**: CDTM x TUM.ai x Anthropic  
-**Team**: Hack-a-thong
+A comprehensive AI-powered system for evaluating the breakthrough potential of research and transforming scientific insights into successful unicorn startups.
 
----
+## 🌟 Overview
 
-## Description
+This system combines advanced AI agents, real-time analysis, and interactive interfaces to provide comprehensive startup evaluation based on multiple criteria including technology readiness, market potential, team composition, scaling opportunities, funding requirements, and societal impact.
 
-This project is an AI-powered system that evaluates research papers to determine their potential to become unicorn startups. It uses **CrewAI orchestration** to coordinate multiple specialized agents that analyze different aspects of the research.
+## 🚀 Features
 
-### Technology Stack
+### 🤖 AI-Powered Analysis
+- **6 Specialized AI Agents** for comprehensive evaluation
+- **Real-time Analysis** with live progress updates
+- **Multi-criteria Assessment** covering all aspects of startup potential
+- **Patent & Publication Search** using Logic Mill database
+- **Research Gap Analysis** for innovation opportunities
 
-- **CrewAI** for intelligent multi-agent orchestration  
-- **Claude (Anthropic)** for advanced reasoning & scoring  
-- **FastAPI** for robust backend API
-- **Streamlit** for interactive web interface
-- **LogicMill API** for patent similarity analysis  
-- **SearchVentures / OpenVC** for market & funding insights  
-- **FAISS** for semantic similarity search
+### 🎨 Modern Frontend
+- **Animated Landing Page** with particle effects
+- **Interactive Dashboard** with real-time metrics
+- **AI Chat Interface** with voice capabilities
+- **PDF Upload & Processing** for research papers
+- **Comprehensive Results Display** with visualizations
 
-### Analysis Criteria
+### 🔄 Real-time Communication
+- **WebSocket Integration** for live updates
+- **Voice-to-Text & Text-to-Speech** using ElevenLabs
+- **Beyond Presence Avatar** for lifelike AI interactions
+- **Context-aware Conversations** with analysis history
 
-The system analyzes research papers across six key dimensions:
+### 📊 Analytics & Reporting
+- **Performance Metrics** and trend analysis
+- **Export Functionality** for detailed reports
+- **Comparison Tools** for multiple evaluations
+- **Historical Data** tracking and insights
 
-1. **Technology/IP** - Innovation level, patent potential, TRL assessment
-2. **Market** - Market size, competitors, commercial viability  
-3. **Team** - Entrepreneurial capabilities, missing roles
-4. **Scaling** - Growth potential, operational risks
-5. **Funding** - Investment opportunities, funding readiness
-6. **Impact** - Societal benefit, sustainability, SDG alignment
+## 🏗️ Architecture
 
-Each analysis contributes to a final **Unicorn Potential Score** (0-100).
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   External      │
+│   (React)       │◄──►│   (FastAPI)     │◄──►│   APIs          │
+│                 │    │                 │    │                 │
+│ • Hero Page     │    │ • CrewAI        │    │ • Anthropic     │
+│ • Dashboard     │    │ • Agents        │    │ • ElevenLabs    │
+│ • AI Chat       │    │ • WebSocket     │    │ • Logic Mill    │
+│ • Forms         │    │ • PDF Parser    │    │ • Beyond        │
+│ • Results       │    │ • Orchestrator  │    │   Presence      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
----
+## 🛠️ Technology Stack
 
-## Quick Start
+### Frontend
+- **React 18** with modern hooks and context
+- **Vite** for fast development and building
+- **Tailwind CSS** with custom animations
+- **Framer Motion** for smooth transitions
+- **Recharts** for data visualization
+- **WebSocket** for real-time communication
+
+### Backend
+- **FastAPI** for high-performance API
+- **CrewAI** for agent orchestration
+- **Anthropic Claude** for AI analysis
+- **WebSocket** for real-time updates
+- **PDF Processing** with PyPDF
+- **Vector Search** with FAISS
+
+### External Services
+- **ElevenLabs** for voice synthesis
+- **Beyond Presence** for AI avatars
+- **Logic Mill** for patent/publication search
+- **Anthropic Claude** for text generation
+
+## 📁 Project Structure
+
+```
+tumHACK/
+├── backend/                    # Backend API and agents
+│   ├── agents/                # AI agent implementations
+│   │   ├── tech_ip_agent.py   # Technology & IP analysis
+│   │   ├── market_agent.py    # Market research
+│   │   ├── team_agent.py      # Team evaluation
+│   │   ├── scaling_agent.py   # Scaling potential
+│   │   ├── funding_agent.py   # Funding analysis
+│   │   └── impact_agent.py    # Impact assessment
+│   ├── utils/                 # Utility functions
+│   ├── main.py               # FastAPI application
+│   ├── crewai_orchestrator.py # Agent orchestration
+│   └── comprehensive_scorer.py # Scoring system
+├── frontend/                  # React frontend
+│   ├── src/
+│   │   ├── components/        # React components
+│   │   ├── context/          # State management
+│   │   ├── hooks/            # Custom hooks
+│   │   ├── services/         # API services
+│   │   └── App.jsx           # Main application
+│   ├── package.json          # Dependencies
+│   └── vite.config.js        # Build configuration
+├── data/                     # Data files
+│   ├── eu_market_sizes.csv   # Market data
+│   ├── eu_regulations.json   # Regulatory info
+│   └── horizon_calls.json    # Funding opportunities
+├── start_full_system.py      # Full system startup
+├── start_with_claude.py      # Backend-only startup
+└── README.md                 # This file
+```
+
+## 🚀 Quick Start
 
 ### Prerequisites
+- Python 3.8+
+- Node.js 18+
+- npm or yarn
 
-- Python 3.9+
-- Anthropic API key
-- LogicMill API key (optional)
-
-### Installation
-
-1. **Clone and setup environment:**
+### 1. Clone and Setup
 ```bash
 git clone <repository-url>
 cd tumHACK
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 2. Backend Setup
+```bash
+# Install Python dependencies
 pip install -r requirements.txt
+
+# Set environment variables
+export ANTHROPIC_API_KEY="your_claude_api_key"
+export ELEVENLABS_API_KEY="your_elevenlabs_api_key"
 ```
 
-2. **Configure environment variables:**
-Create a `.env` file in the project root:
+### 3. Frontend Setup
 ```bash
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-LOGICMILL_API_KEY=your_logicmill_api_key_here  # Optional
+cd frontend
+npm install
+
+# Configure environment
+cp env.example .env
+# Edit .env with your API keys
 ```
 
-3. **Start the system:**
+### 4. Start Full System
 ```bash
-python start_system.py
+# From project root
+python start_full_system.py
 ```
 
-This will start both the backend API (port 8000) and frontend interface (port 8501).
+This will start:
+- Backend API on http://localhost:8000
+- Frontend on http://localhost:3000
+- API documentation on http://localhost:8000/docs
 
-### Access Points
+## 🔧 Individual Component Startup
 
-- **Frontend Interface**: http://localhost:8501
-- **Backend API**: http://localhost:8000  
-- **API Documentation**: http://localhost:8000/docs
+### Backend Only
+```bash
+python start_with_claude.py
+```
 
----
+### Frontend Only
+```bash
+cd frontend
+npm run dev
+```
 
-## Usage
+## 📊 Evaluation Criteria
 
-### Web Interface
+The system evaluates startups across 6 key dimensions:
 
-1. Open http://localhost:8501 in your browser
-2. **Upload a PDF** or **paste text** from your research paper
-3. Select which analyses to run (default: all)
-4. Click "Analyze Paper" and wait for results
-5. View the unicorn potential score and detailed analysis
-6. Download results as JSON
+### 1. Technology & IP (Tech Agent)
+- **Technology Readiness Level (TRL)** assessment
+- **Innovation novelty** and uniqueness
+- **Patent landscape** analysis
+- **Intellectual property** potential
 
-### API Usage
+### 2. Market Analysis (Market Agent)
+- **Market size** and growth potential
+- **Competitive landscape** research
+- **Customer segments** identification
+- **Market entry** barriers and opportunities
 
+### 3. Team Assessment (Team Agent)
+- **Team composition** and expertise
+- **Missing roles** identification
+- **Entrepreneurial readiness** evaluation
+- **Execution capabilities** assessment
+
+### 4. Scaling Potential (Scaling Agent)
+- **Growth strategies** and scalability
+- **Operational risks** and challenges
+- **Resource requirements** for scaling
+- **Market expansion** opportunities
+
+### 5. Funding Analysis (Funding Agent)
+- **Funding requirements** and timeline
+- **Investment readiness** assessment
+- **Funding sources** recommendations
+- **Financial projections** and viability
+
+### 6. Impact Evaluation (Impact Agent)
+- **Societal impact** potential
+- **Environmental benefits** assessment
+- **SDG alignment** evaluation
+- **Sustainability metrics** analysis
+
+## 🎯 Usage Examples
+
+### 1. Research Paper Analysis
 ```python
-import requests
+# Upload a PDF research paper
+POST /analyze-paper
+Content-Type: multipart/form-data
 
-# Upload PDF
-with open("research_paper.pdf", "rb") as f:
-    response = requests.post("http://localhost:8000/analyze-paper", files={"file": f})
-
-# Or send text directly
-data = {
-    "text": "Your research paper text here...",
-    "authors": "Author names and affiliations...",
-    "agents_to_run": ["tech_ip", "market", "team"]  # Optional: specify agents
+# Get comprehensive analysis
+{
+  "unicorn_potential_score": 85,
+  "tech_ip": { "trl": 7, "novelty_score": 8.5 },
+  "market": { "market_size": "€2.5B", "competitors": 12 },
+  "team": { "team_score_0_5": 4.2, "missing_roles": ["Marketing"] },
+  "scaling": { "scaling_score_0_5": 3.8, "growth_potential": "High" },
+  "funding": { "funding_score_0_5": 4.0, "recommended_sources": ["VC", "Grants"] },
+  "impact": { "impact_score_0_5": 4.5, "sdg_alignment": ["SDG 3", "SDG 9"] }
 }
-response = requests.post("http://localhost:8000/analyze-paper", json=data)
-
-results = response.json()
-print(f"Unicorn Potential Score: {results['unicorn_potential_score']}")
 ```
 
----
-
-## Testing
-
-Run the test suite to verify everything works:
-
-```bash
-python test_system.py
+### 2. AI Chat Interaction
+```javascript
+// Real-time chat with AI advisor
+const response = await sendChatMessage("What makes a startup successful?");
+// Get voice response with avatar lip-sync
 ```
 
-This will test:
-- CrewAI orchestration
-- PDF parsing
-- Backend API endpoints
-- Agent coordination
-
----
-
-## Architecture
-
-### CrewAI Orchestration
-
-The system uses CrewAI to coordinate specialized agents:
-
-- **Tech/IP Agent**: Analyzes technological innovation and IP potential
-- **Market Agent**: Identifies market opportunities and competitors  
-- **Team Agent**: Evaluates team composition and capabilities
-- **Scaling Agent**: Assesses growth potential and risks
-- **Funding Agent**: Identifies funding opportunities
-- **Impact Agent**: Evaluates societal and environmental impact
-
-### Backend Structure
-
-```
-backend/
-├── crewai_orchestrator.py    # Main CrewAI orchestration
-├── main.py                   # FastAPI application
-├── agents/                   # Individual agent implementations
-│   ├── tech_ip_agent.py
-│   ├── market_agent.py
-│   ├── team_agent.py
-│   ├── scaling_agent.py
-│   ├── funding_agent.py
-│   └── impact_agent.py
-└── utils/                    # Utility functions
-    ├── claude_client.py
-    ├── pdf_utils.py
-    └── ...
-```
-
-### Frontend Structure
-
-```
-frontend/
-└── app.py                    # Streamlit web interface
-```
-
----
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Claude API key for analysis | Yes |
-| `LOGICMILL_API_KEY` | LogicMill API for patent search | No |
-| `SEARCHVENTURES_CSV_PATH` | Path to SearchVentures data | No |
-| `OPENVC_CSV_PATH` | Path to OpenVC data | No |
-
-### Agent Configuration
-
-You can customize which agents run by modifying the `agents_to_run` parameter:
-
+### 3. Patent Search
 ```python
-# Run all agents (default)
-agents_to_run = ["tech_ip", "market", "team", "scaling", "funding", "impact"]
-
-# Run specific agents only
-agents_to_run = ["tech_ip", "market"]
+# Search for similar patents
+POST /patent-search
+{
+  "query": "quantum computing algorithms",
+  "limit": 10
+}
 ```
 
----
+## 🔌 API Endpoints
 
-## Troubleshooting
+### Analysis Endpoints
+- `POST /analyze-paper` - Analyze uploaded PDF
+- `POST /analyze-text` - Analyze text input
+- `GET /health` - System health check
 
-### Common Issues
+### WebSocket Events
+- `chat` - Send chat message
+- `startup_analysis` - Start analysis
+- `speech_to_text` - Voice input
+- `text_to_speech` - Voice output
+- `patent_search` - Search patents
+- `research_gap_analysis` - Analyze research gaps
 
-1. **"Claude request failed"**
-   - Check your `ANTHROPIC_API_KEY` is set correctly
-   - Verify you have sufficient API credits
+## 🎨 Frontend Features
 
-2. **"PDF parsing failed"**
-   - Ensure the PDF is not encrypted
-   - Try with a different PDF file
+### Landing Page
+- Animated hero section with particle effects
+- Feature showcase with rotating highlights
+- Statistics display with animated counters
+- Smooth scroll animations
 
-3. **"Backend connection failed"**
-   - Make sure the backend is running on port 8000
-   - Check for port conflicts
+### Evaluation Form
+- Multi-step form with progress indicators
+- PDF upload with drag-and-drop
+- Real-time validation and feedback
+- Integration with backend analysis
 
-4. **"CrewAI orchestration failed"**
-   - Verify all dependencies are installed
-   - Check the logs for specific error messages
+### AI Chat Interface
+- Real-time chat with typing indicators
+- Voice input/output capabilities
+- Beyond Presence avatar integration
+- Context-aware conversations
 
-### Logs
+### Results Dashboard
+- Comprehensive results visualization
+- Interactive charts and graphs
+- Export and sharing functionality
+- Detailed analysis breakdowns
 
-Check the logs directory for detailed error information:
+### Analytics Dashboard
+- Performance metrics overview
+- Trend analysis and comparisons
+- Quick actions and navigation
+- Real-time data updates
+
+## 🔐 Security & Privacy
+
+- **API Key Management** with environment variables
+- **CORS Configuration** for secure cross-origin requests
+- **Input Validation** and sanitization
+- **Error Handling** with proper logging
+- **Rate Limiting** for API endpoints
+
+## 🚀 Deployment
+
+### Production Build
 ```bash
-tail -f logs/latest.log
+# Frontend
+cd frontend
+npm run build
+
+# Backend
+pip install -r requirements.txt
+uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 
----
+### Docker Deployment
+```dockerfile
+# Backend Dockerfile
+FROM python:3.9
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
 
-## Contributing
+### Environment Configuration
+```env
+# Production environment variables
+ANTHROPIC_API_KEY=your_production_key
+ELEVENLABS_API_KEY=your_production_key
+LOGIC_MILL_API_TOKEN=your_production_token
+```
+
+## 📈 Performance
+
+- **Real-time Analysis** with WebSocket updates
+- **Optimized Rendering** with React 18 features
+- **Efficient State Management** with Context API
+- **Lazy Loading** for better performance
+- **Caching Strategies** for API responses
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests for new functionality
+4. Add tests if applicable
 5. Submit a pull request
 
+## 📄 License
+
+This project is part of the Max Planck Research Startup Evaluation System.
+
+## 🆘 Support
+
+For support and questions:
+- Check the documentation
+- Review the API documentation at `/docs`
+- Contact the development team
+
+## 🎯 Future Enhancements
+
+- **Machine Learning Models** for improved scoring
+- **Advanced Visualizations** with 3D charts
+- **Mobile App** development
+- **Integration** with more research databases
+- **Automated Report Generation** with templates
+- **Collaborative Features** for team evaluations
+
 ---
 
-## License
-
-This project is developed for the CDTM x TUM.ai x Anthropic Hackathon.
-
----
-
-## Acknowledgments
-
-- **CrewAI** for multi-agent orchestration framework
-- **Anthropic** for Claude AI capabilities
-- **LogicMill** for patent analysis
-- **SearchVentures/OpenVC** for market data
+Built with ❤️ for Max Planck research commercialization and startup success.
