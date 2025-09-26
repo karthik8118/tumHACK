@@ -1,6 +1,11 @@
 // Configuration file for API keys and settings
 export const config = {
-  // Google Gemini API Configuration
+  // Anthropic Claude API Configuration (Primary)
+  anthropic: {
+    apiKey: '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'
+  },
+  
+  // Google Gemini API Configuration (Fallback)
   gemini: {
     apiKey: 'AIzaSyBhN-c0_Pb6b03u9NPQ-WJykHgm0mMrAo8'
   },

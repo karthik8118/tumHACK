@@ -26,30 +26,31 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Setup routes
-setupRoutes(app);
-
-// Setup WebSocket
-setupWebSocket(wss);
-
-// Health check endpoint
+// Health check endpoint (defined before catch-all routes)
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
     services: {
-      gemini: 'connected',
+      anthropic: 'connected (primary)',
+      gemini: 'connected (fallback)',
       elevenlabs: 'connected',
       websocket: 'active'
     }
   });
 });
 
+// Setup routes
+setupRoutes(app);
+
+// Setup WebSocket
+setupWebSocket(wss);
+
 // Start server
 server.listen(config.server.port, () => {
   console.log(`🚀 MPG Breakthrough Analyst Server running on port ${config.server.port}`);
   console.log(`📊 Dashboard: http://localhost:${config.server.port}`);
-  console.log(`🤖 AI Services: Google Gemini + ElevenLabs + Beyond Presence`);
+  console.log(`🤖 AI Services: Anthropic Claude (Primary) + Gemini (Fallback) + ElevenLabs + Beyond Presence`);
 });
 
 export default app;

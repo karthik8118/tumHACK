@@ -1,54 +1,90 @@
-// Google Gemini service
+// Anthropic Claude service with Gemini fallback
 import fetch from 'node-fetch';
+import Anthropic from '@anthropic-ai/sdk';
 import { config } from '../config.js';
 
+// Initialize Anthropic client
+const anthropic = new Anthropic({
+  apiKey: config.anthropic.apiKey,
+});
+
 export const geminiService = {
-  // Generate chat response with context awareness
+  // Generate chat response with context awareness (Anthropic Claude primary, Gemini fallback)
   async generateResponse(message) {
     try {
       // Get current analysis context for more informed responses
       const context = this.getAnalysisContext();
       
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.gemini.apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are an expert startup analyst and advisor specializing in Max Planck research commercialization. 
-              You help evaluate breakthrough potential, identify market opportunities, and provide strategic guidance for 
-              science-to-market transitions. Be conversational, insightful, and focus on practical advice for researchers 
-              and entrepreneurs.
-              
-              ${context ? `
-              CURRENT ANALYSIS CONTEXT:
-              ${JSON.stringify(context, null, 2)}
-              
-              Use this context to provide more relevant and personalized advice.
-              ` : ''}
-              
-              User message: ${message}`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1000,
-          }
-        })
-      });
+      // Try Anthropic Claude first
+      try {
+        const claudeResponse = await anthropic.messages.create({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 1000,
+          temperature: 0.7,
+          messages: [{
+            role: "user",
+            content: `You are an expert startup analyst and advisor specializing in Max Planck research commercialization. 
+            You help evaluate breakthrough potential, identify market opportunities, and provide strategic guidance for 
+            science-to-market transitions. Be conversational, insightful, and focus on practical advice for researchers 
+            and entrepreneurs.
+            
+            ${context ? `
+            CURRENT ANALYSIS CONTEXT:
+            ${JSON.stringify(context, null, 2)}
+            
+            Use this context to provide more relevant and personalized advice.
+            ` : ''}
+            
+            User message: ${message}`
+          }]
+        });
 
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
+        return claudeResponse.content[0].text;
+      } catch (claudeError) {
+        console.warn('Anthropic Claude API error, falling back to Gemini:', claudeError.message);
+        
+        // Fallback to Gemini
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${config.gemini.apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are an expert startup analyst and advisor specializing in Max Planck research commercialization. 
+                You help evaluate breakthrough potential, identify market opportunities, and provide strategic guidance for 
+                science-to-market transitions. Be conversational, insightful, and focus on practical advice for researchers 
+                and entrepreneurs.
+                
+                ${context ? `
+                CURRENT ANALYSIS CONTEXT:
+                ${JSON.stringify(context, null, 2)}
+                
+                Use this context to provide more relevant and personalized advice.
+                ` : ''}
+                
+                User message: ${message}`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 1000,
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Gemini API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
       }
-
-      const data = await response.json();
-      return data.candidates[0].content.parts[0].text;
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('AI API error:', error);
       throw error;
     }
   },
@@ -119,47 +155,80 @@ Provide a JSON response with this exact structure:
 
 Focus on Max Planck research context and scientific breakthrough potential.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.gemini.apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are an expert startup analyst specializing in evaluating breakthrough potential from scientific research. 
-              Provide detailed, actionable insights with specific recommendations.
-              
-              ${analysisPrompt}`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2000,
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const analysisText = result.candidates[0].content.parts[0].text;
-      
-      // Try to parse JSON from the response
+      // Try Anthropic Claude first
       try {
-        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+        const claudeResponse = await anthropic.messages.create({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 2000,
+          temperature: 0.7,
+          messages: [{
+            role: "user",
+            content: `You are an expert startup analyst specializing in evaluating breakthrough potential from scientific research. 
+            Provide detailed, actionable insights with specific recommendations.
+            
+            ${analysisPrompt}`
+          }]
+        });
+
+        const analysisText = claudeResponse.content[0].text;
+        
+        // Try to parse JSON from the response
+        try {
+          const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+          }
+        } catch (parseError) {
+          console.warn('Could not parse JSON from Claude response, returning text');
         }
-      } catch (parseError) {
-        console.warn('Could not parse JSON from Gemini response, returning text');
+        
+        return analysisText;
+      } catch (claudeError) {
+        console.warn('Anthropic Claude API error for startup analysis, falling back to Gemini:', claudeError.message);
+        
+        // Fallback to Gemini
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${config.gemini.apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are an expert startup analyst specializing in evaluating breakthrough potential from scientific research. 
+                Provide detailed, actionable insights with specific recommendations.
+                
+                ${analysisPrompt}`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 2000,
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Gemini API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const analysisText = result.candidates[0].content.parts[0].text;
+        
+        // Try to parse JSON from the response
+        try {
+          const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+          }
+        } catch (parseError) {
+          console.warn('Could not parse JSON from Gemini response, returning text');
+        }
+        
+        return analysisText;
       }
-      
-      return analysisText;
     } catch (error) {
       console.error('Startup analysis error:', error);
       throw error;
